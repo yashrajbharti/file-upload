@@ -10,11 +10,7 @@ let storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const [name, extension] = file.originalname.split('.')
-<<<<<<< HEAD
     cb(null, `targets.${extension}`);
-=======
-    cb(null, "targets." + extension);
->>>>>>> d503b0a8fefb51c8277d07b1907b2c9e84c46cd6
   },
 });
 
