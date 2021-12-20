@@ -9,6 +9,7 @@ const { uploadFile, uploadFiles } = require('../upload.js');
 
 const router = express.Router();
 
+const image_hw = { height: 0, width: 0 };
 
 // Function to handle single upload
 const upload = async (req, res) => {
@@ -78,11 +79,27 @@ const download = (req, res) => {
 }
 
 
+// Handle Height Width
+const height_width = (req, res) => {
+  let height = req.query.height;
+  let width = req.query.width;
+  if (height != undefined && width != undefined) {
+    image_hw.height = height;
+    image_hw.width = width;
+    res.send('Ok')
+  }
+
+  else {
+    res.json(image_hw)
+  }
+}
 
 router.post('/upload', upload)
 router.post('/uploads', uploads)
 router.get('/files', getFileList);
 router.get('/files/:name', download)
+router.get('/hw', height_width)
+
 
 
 module.exports = router;
