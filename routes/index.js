@@ -10,7 +10,7 @@ const { uploadFile, uploadFiles } = require('../upload.js');
 const router = express.Router();
 
 const image_hw = { height: 0, width: 0 };
-
+let coordinates = {}
 // Function to handle single upload
 const upload = async (req, res) => {
   try {
@@ -51,54 +51,92 @@ const uploads = async (req, res, next) => {
 
 
 // Handle fetch list
-const getFileList = (req, res, next) => {
+const getFileList = (req, res,) => {
+  try {
+    fs.readdir(directory, (err, files) => {
+      if (err) res.status(500).json({ message: 'Unable to scan files' });
 
-  fs.readdir(directory, (err, files) => {
-    if (err) res.status(500).json({ message: 'Unable to scan files' });
-
-    let filesInfo = [];
-    files.forEach((file) => {
-      filesInfo.push({
-        name: file,
-        directory: BASEURL + file
-      })
+      let filesInfo = [];
+      files.forEach((file) => {
+        filesInfo.push({
+          name: file,
+          directory: BASEURL + file
+        })
+      });
+      res.status(200).json({ result: filesInfo });
     });
-    res.status(200).json({ result: filesInfo });
-  });
+  }
+  catch (err) {
+    res.status(500).json({ message: 'Error in getting the file list' });
+  }
 };
 
 
 // Handle Downlaod
 const download = (req, res) => {
-  const fileName = req.params.name;
-  res.download(directory + '/' + fileName, (err) => {
-    if (err) {
-      res.status(500).json({ message: 'Could not download file' });
-    }
-  });
+  try {
+    const fileName = req.params.name;
+    res.download(directory + '/' + fileName, (err) => {
+      if (err) {
+        res.status(500).json({ message: 'Could not download file' });
+      }
+    });
+  }
+  catch (err) {
+    res.status(500).json({ message: 'Could not download file' });
+  }
 }
 
 
 // Handle Height Width
 const height_width = (req, res) => {
-  let height = req.query.height;
-  let width = req.query.width;
-  if (height != undefined && width != undefined) {
-    image_hw.height = height;
-    image_hw.width = width;
-    res.send('Ok')
-  }
+  try {
+    let height = req.query.height;
+    let width = req.query.width;
+    if (height != undefined && width != undefined) {
+      image_hw.height = height;
+      image_hw.width = width;
+      res.send('Ok')
+    }
 
-  else {
-    res.json(image_hw)
+    else {
+      res.json(image_hw)
+    }
+  }
+  catch (err) {
+    res.status(500).json({ message: 'Error getting dimensions' });
   }
 }
 
-router.post('/upload', upload)
-router.post('/uploads', uploads)
+// Handle Coordinate & Text Data 
+const codata = (req, res) => {
+  try {
+    coordinates = req.body;
+    console.log(coordinates)
+    res.send('Ok')
+  }
+  catch (err) {
+    res.status(500).json({ message: 'Error Saving the data points' });
+  }
+}
+
+const get_codata = (req, res) => {
+
+  try {
+    res.json(coordinates)
+  }
+  catch (err) {
+    res.status(500).json({ message: 'Error getting Coordinate data' });
+  }
+}
+
+router.post('/upload', upload);
+router.post('/uploads', uploads);
+router.post('/codata', codata);
+router.get('/codata', get_codata);
 router.get('/files', getFileList);
-router.get('/files/:name', download)
-router.get('/hw', height_width)
+router.get('/files/:name', download);
+router.get('/hw', height_width);
 
 
 
